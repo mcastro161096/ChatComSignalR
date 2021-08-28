@@ -11,7 +11,7 @@ namespace ChatComSignalR
     {
         protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
-            return Connection.Broadcast(data, connectionId);
+            return Connection.Broadcast(data);
         }
     }
 }
