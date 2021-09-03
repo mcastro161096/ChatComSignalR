@@ -18,8 +18,27 @@ namespace ChatComSignalR
             {
                 var groupName = data.Substring(0, i);
                 var messageOrCommand = data.Substring(i + 1);
-            }
+                switch(messageOrCommand)
+                {
+                    case "join":
+                        Groups.Add(connectionId, groupName);
+                        Groups.Send(groupName, connectionId + " join in group " + groupName);
+                            break;
+                    case "leave":
+                        Groups.Remove(connectionId, groupName);
+                        Groups.Send(groupName, connectionId + " leave of the group " + groupName);
 
+                        break;
+                    default:
+                        Groups.Send(groupName, messageOrCommand + $"({groupName})");
+                        break;
+                }
+            }
+            else
+            {
+                Connection.Broadcast(data);
+            }
+ 
             return base.OnReceived(request, connectionId, data);
         }
 
