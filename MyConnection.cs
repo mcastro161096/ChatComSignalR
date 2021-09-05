@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Newtonsoft.Json;
 
 namespace ChatComSignalR
 {
@@ -13,20 +14,23 @@ namespace ChatComSignalR
         private static int QuantidadeConexoes = 0;
         protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
+            var objeto = JsonConvert.DeserializeObject<dynamic>(data);
             int i;
-            if ((i = data.IndexOf(":")) > -1) 
+            string text = objeto.Text;
+            string from = objeto.From;
+            if ((i = text.IndexOf(":")) > -1) 
             {
-                var groupName = data.Substring(0, i);
-                var messageOrCommand = data.Substring(i + 1);
+                var groupName = text.Substring(0, i);
+                var messageOrCommand = text.Substring(i + 1);
                 switch(messageOrCommand)
                 {
                     case "join":
                         Groups.Add(connectionId, groupName);
-                        Groups.Send(groupName, connectionId + " join in group " + groupName);
+                        Groups.Send(groupName, $"user: {from}({connectionId}) join in group {groupName}");
                             break;
                     case "leave":
                         Groups.Remove(connectionId, groupName);
-                        Groups.Send(groupName, connectionId + " leave of the group " + groupName);
+                        Groups.Send(groupName, $"user: {from}({connectionId}) leave of the group {groupName}");
 
                         break;
                     default:
@@ -36,7 +40,7 @@ namespace ChatComSignalR
             }
             else
             {
-                Connection.Broadcast(data);
+                Connection.Broadcast($"Mensagem de {from}: {text}");
             }
  
             return base.OnReceived(request, connectionId, data);
